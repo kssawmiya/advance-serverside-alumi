@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Alumni Influencers Platform</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: #f0f4f8;
+      color: #2d3748;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.10);
+      max-width: 680px;
+      width: 100%;
+      padding: 3rem 2.5rem;
+      text-align: center;
+    }
+    .badge {
+      display: inline-block;
+      background: #ebf4ff;
+      color: #3182ce;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      border-radius: 999px;
+      padding: 0.3rem 1rem;
+      margin-bottom: 1.25rem;
+    }
+    h1 { font-size: 2rem; font-weight: 800; color: #1a202c; line-height: 1.2; margin-bottom: 0.75rem; }
+    h1 span { color: #3182ce; }
+    .subtitle { font-size: 1rem; color: #718096; margin-bottom: 2rem; line-height: 1.6; }
+    .info-box {
+      background: #fffbeb; border: 1px solid #f6e05e; border-radius: 8px;
+      padding: 1rem 1.25rem; margin-bottom: 2rem; text-align: left;
+      font-size: 0.9rem; color: #744210; line-height: 1.6;
+    }
+    .info-box strong { display: block; margin-bottom: 0.25rem; }
+    .btn-group { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin-bottom: 2rem; }
+    .btn {
+      display: inline-block; padding: 0.75rem 1.75rem; border-radius: 8px;
+      font-weight: 600; font-size: 0.95rem; text-decoration: none;
+      transition: transform 0.15s, box-shadow 0.15s; cursor: pointer; border: none;
+    }
+    .btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+    .btn-primary   { background: #3182ce; color: #fff; }
+    .btn-secondary { background: #edf2f7; color: #2d3748; }
+    .btn-green     { background: #38a169; color: #fff; }
+    .quick-links { display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; margin-bottom: 2rem; }
+    .quick-link {
+      background: #f7fafc; border: 1px solid #e2e8f0; border-radius: 8px;
+      padding: 0.9rem 1.4rem; text-decoration: none; color: #2d3748; font-size: 0.9rem;
+      transition: border-color 0.15s; text-align: center; min-width: 130px;
+    }
+    .quick-link:hover { border-color: #3182ce; color: #3182ce; }
+    .quick-link .icon { font-size: 1.4rem; display: block; margin-bottom: 0.3rem; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Alumni <span>Influencers</span> Platform</h1>
+    <p class="subtitle">
+      Alumni Management &amp; Blind Bidding System for Eastminster University.<br />
+      Manage your professional profile and bid for the daily Alumni of the Day slot.
+    </p>
+
+    <div class="btn-group">
+      <a href="/register" class="btn btn-primary">Create Account</a>
+      <a href="/login"    class="btn btn-green">Log In</a>
+      <a href="/api-docs" class="btn btn-secondary">API Docs</a>
+    </div>
+
+    <div class="quick-links" id="authLinks" style="display:none">
+      <a href="/dashboard" class="quick-link"><span class="icon">&#128100;</span>My Profile</a>
+      <a href="/bid"       class="quick-link"><span class="icon">&#127942;</span>Bidding</a>
+      <a href="/api-docs"  class="quick-link"><span class="icon">&#128196;</span>API Docs</a>
+    </div>
+
+    <!-- ── Alumni of the Day ─────────────────────────────────────── -->
+    <% if (typeof alumniOfDay !== 'undefined' && alumniOfDay) { %>
+    <div style="background:#f0fff4;border:1px solid #c6f6d5;border-radius:8px;padding:1.25rem 1.5rem;margin-bottom:2rem;text-align:left;">
+      <h2 style="font-size:0.8rem;text-transform:uppercase;letter-spacing:0.08em;color:#276749;margin-bottom:1rem;font-weight:700;">
+        &#127942; Alumni of the Day
+      </h2>
+      <div style="display:flex;align-items:center;gap:1.25rem;flex-wrap:wrap;">
+        <% if (alumniOfDay.profileImage) { %>
+          <img src="/<%= alumniOfDay.profileImage.replace(/^public\//, '') %>" alt="<%= alumniOfDay.fullName %>"
+               style="width:80px;height:80px;object-fit:cover;border-radius:50%;border:2px solid #38a169;" />
+        <% } else { %>
+          <div style="width:80px;height:80px;border-radius:50%;background:#e2e8f0;display:flex;align-items:center;justify-content:center;font-size:2rem;color:#a0aec0;">&#128100;</div>
+        <% } %>
+        <div style="flex:1;">
+          <p style="font-size:1.15rem;font-weight:700;color:#1a202c;margin-bottom:0.25rem;"><%= alumniOfDay.fullName %></p>
+          <% if (alumniOfDay.bio) { %>
+            <p style="font-size:0.9rem;color:#4a5568;margin-bottom:0.4rem;"><%= alumniOfDay.bio %></p>
+          <% } %>
+          <% if (alumniOfDay.degrees && alumniOfDay.degrees.length > 0) { %>
+            <p style="font-size:0.85rem;color:#718096;margin-bottom:0.2rem;">
+              &#127891; <%= alumniOfDay.degrees.map(d => d.title).filter(Boolean).join(', ') %>
+            </p>
+          <% } %>
+          <% if (alumniOfDay.employmentHistory && alumniOfDay.employmentHistory.length > 0) { %>
+            <% const current = alumniOfDay.employmentHistory.find(e => !e.endDate); %>
+            <% if (current) { %>
+              <p style="font-size:0.85rem;color:#718096;margin-bottom:0.2rem;">
+                &#128188; <%= current.role %> at <%= current.company %>
+              </p>
+            <% } %>
+          <% } %>
+          <% if (alumniOfDay.linkedinUrl) { %>
+            <a href="<%= alumniOfDay.linkedinUrl %>" target="_blank" rel="noopener"
+               style="font-size:0.85rem;color:#3182ce;text-decoration:none;">View LinkedIn Profile &rarr;</a>
+          <% } %>
+        </div>
+      </div>
+    </div>
+    <% } else { %>
+    <div style="background:#f7fafc;border:1px solid #e2e8f0;border-radius:8px;padding:1rem 1.25rem;margin-bottom:2rem;text-align:center;">
+      <p style="color:#a0aec0;font-size:0.9rem;">No Alumni of the Day selected yet. Check back after 6&nbsp;PM!</p>
+    </div>
+    <% } %>
+
+    <div class="info-box">
+      <strong>Getting started</strong>
+      Register with your university email (<%= domain %>), verify your email address,
+      then complete your profile and start bidding for the daily Alumni of the Day slot.
+      Winners are selected at 6&nbsp;PM each day.
+    </div>
+
+  </div>
+
+  <script>
+    if (localStorage.getItem('alumni_token')) {
+      document.getElementById('authLinks').style.display = 'flex';
+    }
+  </script>
+</body>
+</html>

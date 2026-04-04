@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title><%= title %> — Alumni Influencers</title>
+  <!-- CSRF token for double-submit cookie pattern -->
+  <meta name="csrf-token" content="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', Arial, sans-serif; background: #f4f6fb; color: #222; min-height: 100vh; }
+    nav { background: #1a2340; color: #fff; padding: 0 2rem; display: flex; align-items: center; justify-content: space-between; height: 56px; }
+    nav .brand { font-size: 1.2rem; font-weight: 700; color: #fff; text-decoration: none; }
+    nav .nav-links a { color: #cdd; text-decoration: none; margin-left: 1.5rem; font-size: 0.95rem; }
+    nav .nav-links a:hover { color: #fff; }
+    .container { max-width: 860px; margin: 2rem auto; padding: 0 1rem; }
+    .card { background: #fff; border-radius: 10px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); padding: 2rem; margin-bottom: 1.5rem; }
+    h1 { font-size: 1.6rem; margin-bottom: 1rem; color: #1a2340; }
+    h2 { font-size: 1.2rem; margin-bottom: 0.75rem; color: #1a2340; }
+    label { display: block; margin-bottom: 0.25rem; font-weight: 600; font-size: 0.9rem; color: #444; }
+    input, textarea, select { width: 100%; padding: 0.55rem 0.8rem; border: 1px solid #ccc; border-radius: 6px; font-size: 0.95rem; margin-bottom: 0.9rem; background: #fafafa; }
+    input:focus, textarea:focus { outline: none; border-color: #3b5bdb; background: #fff; }
+    button { cursor: pointer; padding: 0.55rem 1.4rem; border: none; border-radius: 6px; font-size: 0.95rem; font-weight: 600; }
+    .btn-primary { background: #3b5bdb; color: #fff; }
+    .btn-primary:hover { background: #2f4ac7; }
+    .btn-danger { background: #d94040; color: #fff; }
+    .btn-danger:hover { background: #b83030; }
+    .btn-sm { padding: 0.3rem 0.85rem; font-size: 0.82rem; }
+    .msg { padding: 0.7rem 1rem; border-radius: 6px; margin-bottom: 1rem; font-size: 0.92rem; display: none; }
+    .msg.success { background: #d3f9d8; color: #1e5e1e; display: block; }
+    .msg.error   { background: #ffe3e3; color: #7a1c1c; display: block; }
+    .progress-bar-wrap { background: #e9ecef; border-radius: 99px; height: 12px; margin-bottom: 0.5rem; }
+    .progress-bar { height: 100%; border-radius: 99px; background: #3b5bdb; transition: width 0.4s; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+    th, td { text-align: left; padding: 0.5rem 0.75rem; border-bottom: 1px solid #eee; }
+    th { background: #f0f2f8; font-weight: 600; }
+    .badge { display: inline-block; padding: 0.2rem 0.6rem; border-radius: 99px; font-size: 0.78rem; font-weight: 700; }
+    .badge-green  { background: #d3f9d8; color: #1e5e1e; }
+    .badge-red    { background: #ffe3e3; color: #7a1c1c; }
+    .badge-yellow { background: #fff3cd; color: #7a5800; }
+    .section-list { list-style: none; }
+    .section-list li { padding: 0.3rem 0; display: flex; align-items: center; gap: 0.5rem; }
+    .check { color: #2e7d32; font-weight: bold; }
+    .cross { color: #c62828; font-weight: bold; }
+    a.link { color: #3b5bdb; text-decoration: none; }
+    a.link:hover { text-decoration: underline; }
+    .flex-row { display: flex; gap: 1rem; flex-wrap: wrap; }
+    .flex-row > * { flex: 1; min-width: 200px; }
+  </style>
+</head>
+<body>
+<nav>
+  <a class="brand" href="/">&#127891; Alumni Influencers</a>
+  <div class="nav-links" id="navLinks">
+    <a href="/login">Log In</a>
+    <a href="/register">Register</a>
+  </div>
+</nav>
+<script>
+  // Show appropriate nav links based on token presence
+  (function() {
+    const token = localStorage.getItem('alumni_token');
+    const nav = document.getElementById('navLinks');
+    if (token) {
+      nav.innerHTML = '<a href="/dashboard">My Profile</a><a href="/bid">Bidding</a><a href="#" id="logoutBtn">Log Out</a>';
+      document.getElementById('logoutBtn')?.addEventListener('click', async (e) => {
+        e.preventDefault();
+        await fetch('/api/auth/logout', { method: 'POST', headers: { Authorization: 'Bearer ' + token } });
+        localStorage.removeItem('alumni_token');
+        window.location.href = '/login';
+      });
+    }
+  })();
+</script>
+<script>
+/**
+ * SESSION TIMEOUT HANDLING:
+ * Checks JWT expiry on page load and every 60 seconds.
+ * If the token has expired, auto-logs out the user and redirects to login.
+ * JWT tokens expire after the period set in JWT_EXPIRES_IN (default: 7 days).
+ * This proactive client-side check prevents stale sessions from persisting.
+ */
+(function checkSessionTimeout() {
+  const token = localStorage.getItem('alumni_token');
+  if (!token) return;
+
+  function parseJwtExp(t) {
+    try {
+      const payload = JSON.parse(atob(t.split('.')[1]));
+      return payload.exp ? payload.exp * 1000 : null;
+    } catch (e) { return null; }
+  }
+
+  function checkExpiry() {
+    const currentToken = localStorage.getItem('alumni_token');
+    if (!currentToken) return;
+    const exp = parseJwtExp(currentToken);
+    if (exp && Date.now() >= exp) {
+      localStorage.removeItem('alumni_token');
+      alert('Your session has expired. Please log in again.');
+      window.location.href = '/login';
+    }
+  }
+
+  checkExpiry();
+  setInterval(checkExpiry, 60 * 1000);
+})();
+</script>

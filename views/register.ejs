@@ -1,0 +1,62 @@
+<%- include('partials/head', { title: 'Register' }) %>
+<div class="container">
+  <div class="card" style="max-width:480px;margin:3rem auto;">
+    <h1>Create Account</h1>
+    <p style="margin-bottom:1.2rem;color:#666;font-size:0.93rem;">University email required (<%= domain %>)</p>
+
+    <div id="msg" class="msg"></div>
+
+    <form id="registerForm">
+      <label for="fullName">Full Name</label>
+      <input id="fullName" type="text" placeholder="Jane Smith" required />
+
+      <label for="email">University Email</label>
+      <input id="email" type="email" placeholder="jane@<%= domain %>" required />
+
+      <label for="password">Password</label>
+      <input id="password" type="password" placeholder="Min 8 chars, upper, lower, digit, symbol" required />
+      <p style="font-size:0.8rem;color:#888;margin-top:-0.7rem;margin-bottom:0.9rem;">Must contain uppercase, lowercase, number and one of @$!%*?&</p>
+
+      <button class="btn-primary" type="submit" style="width:100%">Register</button>
+    </form>
+    <p style="margin-top:1rem;font-size:0.92rem;text-align:center;">Already have an account? <a class="link" href="/login">Log in</a></p>
+  </div>
+</div>
+<script>
+document.getElementById('registerForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const msg = document.getElementById('msg');
+  msg.className = 'msg';
+  msg.textContent = '';
+
+  const body = {
+    fullName: document.getElementById('fullName').value,
+    email: document.getElementById('email').value,
+    password: document.getElementById('password').value,
+  };
+
+  try {
+    const res = await fetch('/api/auth/register', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]')?.content || '',
+      },
+      body: JSON.stringify(body),
+    });
+    const data = await res.json();
+    if (data.success) {
+      msg.className = 'msg success';
+      msg.textContent = data.message;
+      document.getElementById('registerForm').reset();
+    } else {
+      msg.className = 'msg error';
+      msg.textContent = data.error || (data.errors && data.errors.map(e => e.message).join(', ')) || 'Registration failed';
+    }
+  } catch (err) {
+    msg.className = 'msg error';
+    msg.textContent = 'Network error. Please try again.';
+  }
+});
+</script>
+</body></html>

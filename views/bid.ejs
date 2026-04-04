@@ -1,0 +1,179 @@
+<%- include('partials/head', { title: 'Bidding' }) %>
+<div class="container">
+
+  <div id="authMsg" class="msg error" style="display:none">You must be logged in. <a class="link" href="/login">Log in here</a>.</div>
+  <div id="msg" class="msg"></div>
+
+  <!-- ── Monthly Status ───────────────────────────────────────────── -->
+  <div class="card" id="limitCard" style="display:none">
+    <h1>&#127942; Blind Bidding</h1>
+    <p style="color:#666;margin-bottom:1rem;font-size:0.93rem;">Bid for tomorrow's Alumni of the Day slot. Bids are blind — you cannot see other users' amounts.</p>
+    <div id="limitInfo"></div>
+  </div>
+
+  <!-- ── Current Bid Status ───────────────────────────────────────── -->
+  <div class="card" id="statusCard" style="display:none">
+    <h2>My Bid Status for Tomorrow</h2>
+    <div id="bidStatusInfo"></div>
+  </div>
+
+  <!-- ── Place / Update Bid ────────────────────────────────────────── -->
+  <div class="card" id="placeBidCard" style="display:none">
+    <h2 id="bidFormTitle">Place a Bid</h2>
+    <form id="bidForm">
+      <label for="bidAmount">Bid Amount (£)</label>
+      <input id="bidAmount" type="number" min="0" step="0.01" placeholder="e.g. 150" required />
+      <button class="btn-primary" type="submit" id="bidBtn">Place Bid</button>
+    </form>
+  </div>
+
+  <!-- ── Bid History ────────────────────────────────────────────────── -->
+  <div class="card" id="historyCard" style="display:none">
+    <h2>Bid History</h2>
+    <div id="historyTable"></div>
+  </div>
+
+</div>
+
+<script>
+const BASE = '/api';
+const TOKEN = localStorage.getItem('alumni_token');
+let currentBidId = null;
+
+if (!TOKEN) {
+  document.getElementById('authMsg').style.display = 'block';
+} else {
+  ['limitCard','statusCard','placeBidCard','historyCard'].forEach(id => document.getElementById(id).style.display = 'block');
+  loadBidPage();
+}
+
+function authHeaders() {
+  return { 'Content-Type': 'application/json', Authorization: 'Bearer ' + TOKEN };
+}
+
+function showMsg(text, type) {
+  const el = document.getElementById('msg');
+  el.textContent = text;
+  el.className = 'msg ' + type;
+  setTimeout(() => { el.className = 'msg'; el.textContent = ''; }, 5000);
+}
+
+async function loadBidPage() {
+  await Promise.all([loadMonthlyLimit(), loadBidStatus(), loadHistory()]);
+}
+
+async function loadMonthlyLimit() {
+  const res = await fetch(`${BASE}/bids/monthly-limit`, { headers: authHeaders() });
+  const data = await res.json();
+  if (!data.success) return;
+  const d = data.data;
+  const pct = Math.round((d.used / d.limit) * 100);
+  document.getElementById('limitInfo').innerHTML = `
+    <div class="progress-bar-wrap"><div class="progress-bar" style="width:${pct}%;background:${d.remaining === 0 ? '#d94040' : '#3b5bdb'}"></div></div>
+    <p style="font-size:0.9rem;color:#555;margin-top:0.3rem;">
+      <strong>${d.used} / ${d.limit}</strong> win slots used this month
+      ${d.eventBonus ? '<span class="badge badge-green" style="margin-left:0.5rem">Event Bonus Active</span>' : ''}
+      &nbsp;— <strong>${d.remaining}</strong> remaining
+    </p>
+    <p style="font-size:0.85rem;color:#888;margin-top:0.3rem;">${d.message}</p>
+  `;
+}
+
+async function loadBidStatus() {
+  const res = await fetch(`${BASE}/bids/status`, { headers: authHeaders() });
+  const data = await res.json();
+  if (!data.success) return;
+  const d = data.data;
+
+  let badge = '';
+  if (d.status === 'winning')      badge = '<span class="badge badge-green">Currently Winning</span>';
+  else if (d.status === 'not_winning') badge = '<span class="badge badge-red">Not Winning</span>';
+  else                             badge = '<span class="badge badge-yellow">No Bid Placed</span>';
+
+  document.getElementById('bidStatusInfo').innerHTML = `
+    <p>${badge} &nbsp; ${d.message}</p>
+    ${d.yourBid !== undefined ? `<p style="margin-top:0.5rem;font-size:0.9rem;color:#555;">Your current bid: <strong>£${d.yourBid.toFixed(2)}</strong></p>` : ''}
+    ${d.bidDate ? `<p style="font-size:0.85rem;color:#888;">Slot: ${new Date(d.bidDate).toLocaleDateString('en-GB')}</p>` : ''}
+  `;
+
+  // If user has a bid, switch the form to "update" mode
+  if (d.status !== 'no_bid') {
+    currentBidId = await getActiveBidId();
+    document.getElementById('bidFormTitle').textContent = 'Increase My Bid';
+    document.getElementById('bidBtn').textContent = 'Increase Bid';
+  } else {
+    currentBidId = null;
+    document.getElementById('bidFormTitle').textContent = 'Place a Bid';
+    document.getElementById('bidBtn').textContent = 'Place Bid';
+  }
+}
+
+async function getActiveBidId() {
+  const res = await fetch(`${BASE}/bids/history`, { headers: authHeaders() });
+  const data = await res.json();
+  if (!data.success) return null;
+  // Find the most recent active bid for tomorrow
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  const tStr = tomorrow.toDateString();
+  const active = data.data.find(b => b.isActive && new Date(b.bidDate).toDateString() === tStr);
+  return active ? active._id : null;
+}
+
+async function loadHistory() {
+  const res = await fetch(`${BASE}/bids/history`, { headers: authHeaders() });
+  const data = await res.json();
+  if (!data.success || !data.data.length) {
+    document.getElementById('historyTable').innerHTML = '<p style="color:#aaa;font-size:0.9rem;">No bids placed yet.</p>';
+    return;
+  }
+  document.getElementById('historyTable').innerHTML = `
+    <table>
+      <thead><tr><th>Date</th><th>Amount</th><th>Status</th><th>Won?</th><th></th></tr></thead>
+      <tbody>
+        ${data.data.map(b => `<tr>
+          <td>${new Date(b.bidDate).toLocaleDateString('en-GB')}</td>
+          <td>£${b.amount.toFixed(2)}</td>
+          <td>${b.isActive ? '<span class="badge badge-green">Active</span>' : '<span class="badge badge-yellow">Cancelled</span>'}</td>
+          <td>${b.isWinner ? '<span class="badge badge-green">&#127942; Winner</span>' : '—'}</td>
+          <td>${b.isActive ? `<button class="btn-danger btn-sm" onclick="cancelBid('${b._id}')">Cancel</button>` : ''}</td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+  `;
+}
+
+document.getElementById('bidForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const amount = parseFloat(document.getElementById('bidAmount').value);
+  if (isNaN(amount) || amount < 0) { showMsg('Enter a valid amount.', 'error'); return; }
+
+  if (currentBidId) {
+    // Update existing bid
+    const res = await fetch(`${BASE}/bids/${currentBidId}`, {
+      method: 'PUT', headers: authHeaders(), body: JSON.stringify({ amount }),
+    });
+    const data = await res.json();
+    showMsg(data.success ? 'Bid updated!' : (data.error || 'Update failed'), data.success ? 'success' : 'error');
+  } else {
+    // Place new bid
+    const res = await fetch(`${BASE}/bids`, {
+      method: 'POST', headers: authHeaders(), body: JSON.stringify({ amount }),
+    });
+    const data = await res.json();
+    showMsg(data.success ? 'Bid placed! Winner announced at 6 PM.' : (data.error || 'Failed to place bid'), data.success ? 'success' : 'error');
+  }
+
+  document.getElementById('bidForm').reset();
+  await loadBidPage();
+});
+
+async function cancelBid(id) {
+  if (!confirm('Cancel this bid?')) return;
+  const res = await fetch(`${BASE}/bids/${id}`, { method: 'DELETE', headers: authHeaders() });
+  const data = await res.json();
+  showMsg(data.success ? 'Bid cancelled.' : (data.error || 'Failed'), data.success ? 'success' : 'error');
+  await loadBidPage();
+}
+</script>
+</body></html>

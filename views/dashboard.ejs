@@ -1,0 +1,441 @@
+<%- include('partials/head', { title: 'My Profile' }) %>
+<div class="container">
+
+  <div id="msg" class="msg"></div>
+  <div id="authMsg" class="msg error" style="display:none">You must be logged in. <a class="link" href="/login">Log in here</a>.</div>
+
+  <!-- ── Completion bar ───────────────────────────────────────────── -->
+  <div class="card" id="completionCard" style="display:none">
+    <h2>Profile Completion</h2>
+    <div class="progress-bar-wrap"><div class="progress-bar" id="progressBar" style="width:0%"></div></div>
+    <p id="progressPct" style="font-size:0.9rem;color:#555;margin-bottom:0.5rem;"></p>
+    <ul class="section-list" id="sectionList"></ul>
+  </div>
+
+  <!-- ── Basic Info ───────────────────────────────────────────────── -->
+  <div class="card" id="basicCard" style="display:none">
+    <h2>Personal Information</h2>
+    <form id="basicForm">
+      <div class="flex-row">
+        <div>
+          <label>Full Name</label>
+          <input id="fullName" type="text" placeholder="Jane Smith" />
+        </div>
+        <div>
+          <label>LinkedIn URL</label>
+          <input id="linkedinUrl" type="url" placeholder="https://linkedin.com/in/..." />
+        </div>
+      </div>
+      <label>Biography <span style="font-weight:400;color:#888">(max 500 chars)</span></label>
+      <textarea id="bio" rows="3" maxlength="500" placeholder="A short professional summary..."></textarea>
+      <button class="btn-primary" type="submit">Save Changes</button>
+    </form>
+  </div>
+
+  <!-- ── Profile Image ────────────────────────────────────────────── -->
+  <div class="card" id="imageCard" style="display:none">
+    <h2>Profile Image</h2>
+    <div style="display:flex;align-items:center;gap:1.5rem;margin-bottom:1rem;">
+      <img id="profileImg" src="" alt="Profile" style="width:90px;height:90px;object-fit:cover;border-radius:50%;border:2px solid #ccc;display:none;" />
+      <span id="noImg" style="color:#aaa;font-size:0.9rem;">No image uploaded</span>
+    </div>
+    <form id="imageForm">
+      <label>Upload Image <span style="font-weight:400;color:#888">(JPEG or PNG, max 2MB)</span></label>
+      <input type="file" id="imgFile" accept="image/jpeg,image/png" style="margin-bottom:0.9rem;" />
+      <button class="btn-primary" type="submit">Upload Image</button>
+    </form>
+  </div>
+
+  <!-- ── Degrees ──────────────────────────────────────────────────── -->
+  <div class="card" id="degreesCard" style="display:none">
+    <h2>Degrees</h2>
+    <div id="degreesList"></div>
+    <hr style="margin:1rem 0;">
+    <h2 style="font-size:1rem;">Add Degree</h2>
+    <form id="degreeForm" class="flex-row">
+      <div><label>Title</label><input id="deg_title" placeholder="BSc Computer Science" /></div>
+      <div><label>Institution</label><input id="deg_institution" placeholder="Eastminster University" /></div>
+      <div><label>URL</label><input id="deg_url" type="url" placeholder="https://..." /></div>
+      <div><label>Completion Date</label><input id="deg_date" type="date" /></div>
+      <div style="display:flex;align-items:flex-end;"><button class="btn-primary" type="submit">Add</button></div>
+    </form>
+  </div>
+
+  <!-- ── Certifications ───────────────────────────────────────────── -->
+  <div class="card" id="certsCard" style="display:none">
+    <h2>Certifications</h2>
+    <div id="certsList"></div>
+    <hr style="margin:1rem 0;">
+    <h2 style="font-size:1rem;">Add Certification</h2>
+    <form id="certForm" class="flex-row">
+      <div><label>Title</label><input id="cert_title" placeholder="AWS Solutions Architect" /></div>
+      <div><label>Awarding Body</label><input id="cert_body" placeholder="Amazon Web Services" /></div>
+      <div><label>URL</label><input id="cert_url" type="url" placeholder="https://..." /></div>
+      <div><label>Completion Date</label><input id="cert_date" type="date" /></div>
+      <div style="display:flex;align-items:flex-end;"><button class="btn-primary" type="submit">Add</button></div>
+    </form>
+  </div>
+
+  <!-- ── Licences ─────────────────────────────────────────────────── -->
+  <div class="card" id="licencesCard" style="display:none">
+    <h2>Licences</h2>
+    <div id="licencesList"></div>
+    <hr style="margin:1rem 0;">
+    <h2 style="font-size:1rem;">Add Licence</h2>
+    <form id="licenceForm" class="flex-row">
+      <div><label>Title</label><input id="lic_title" placeholder="PMP" /></div>
+      <div><label>Issuing Body</label><input id="lic_body" placeholder="PMI" /></div>
+      <div><label>URL</label><input id="lic_url" type="url" placeholder="https://..." /></div>
+      <div><label>Date</label><input id="lic_date" type="date" /></div>
+      <div style="display:flex;align-items:flex-end;"><button class="btn-primary" type="submit">Add</button></div>
+    </form>
+  </div>
+
+  <!-- ── Professional Courses ─────────────────────────────────────── -->
+  <div class="card" id="coursesCard" style="display:none">
+    <h2>Professional Courses</h2>
+    <div id="coursesList"></div>
+    <hr style="margin:1rem 0;">
+    <h2 style="font-size:1rem;">Add Course</h2>
+    <form id="courseForm" class="flex-row">
+      <div><label>Title</label><input id="crs_title" placeholder="Machine Learning Specialisation" /></div>
+      <div><label>Provider</label><input id="crs_provider" placeholder="Coursera" /></div>
+      <div><label>URL</label><input id="crs_url" type="url" placeholder="https://..." /></div>
+      <div><label>Completion Date</label><input id="crs_date" type="date" /></div>
+      <div style="display:flex;align-items:flex-end;"><button class="btn-primary" type="submit">Add</button></div>
+    </form>
+  </div>
+
+  <!-- ── Employment History ────────────────────────────────────────── -->
+  <div class="card" id="employmentCard" style="display:none">
+    <h2>Employment History</h2>
+    <div id="employmentList"></div>
+    <hr style="margin:1rem 0;">
+    <h2 style="font-size:1rem;">Add Employment</h2>
+    <form id="employmentForm" class="flex-row">
+      <div><label>Company</label><input id="emp_company" placeholder="Acme Corp" /></div>
+      <div><label>Role</label><input id="emp_role" placeholder="Software Engineer" /></div>
+      <div><label>Start Date</label><input id="emp_start" type="date" /></div>
+      <div><label>End Date <span style="font-weight:400;color:#888">(leave blank if current)</span></label><input id="emp_end" type="date" /></div>
+      <div style="display:flex;align-items:flex-end;"><button class="btn-primary" type="submit">Add</button></div>
+    </form>
+  </div>
+
+  <!-- ── Edit Modal ──────────────────────────────────────────────── -->
+  <div id="editModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:1000;">
+    <div style="background:#fff;border-radius:10px;padding:2rem;max-width:560px;width:90%;margin:10vh auto;">
+      <h2 id="editModalTitle" style="margin-bottom:1rem;">Edit Entry</h2>
+      <form id="editForm"></form>
+      <div style="display:flex;gap:1rem;margin-top:1rem;">
+        <button class="btn-primary" onclick="submitEdit()">Save Changes</button>
+        <button class="btn-danger" onclick="closeEditModal()">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const BASE = '/api';
+let TOKEN = localStorage.getItem('alumni_token');
+
+if (!TOKEN) {
+  document.getElementById('authMsg').style.display = 'block';
+} else {
+  loadAll();
+}
+
+function authHeaders() {
+  return { 'Content-Type': 'application/json', Authorization: 'Bearer ' + TOKEN };
+}
+
+function showMsg(text, type) {
+  const el = document.getElementById('msg');
+  el.textContent = text;
+  el.className = 'msg ' + type;
+  setTimeout(() => { el.className = 'msg'; el.textContent = ''; }, 4000);
+}
+
+async function loadAll() {
+  const cards = ['completionCard','basicCard','imageCard','degreesCard','certsCard','licencesCard','coursesCard','employmentCard'];
+  cards.forEach(id => document.getElementById(id).style.display = 'block');
+
+  await loadCompletion();
+  await loadProfile();
+}
+
+async function loadCompletion() {
+  const res = await fetch(`${BASE}/profile/completion`, { headers: authHeaders() });
+  const data = await res.json();
+  if (!data.success) return;
+  const d = data.data;
+  document.getElementById('progressBar').style.width = d.completionPercentage + '%';
+  document.getElementById('progressPct').textContent = d.completionPercentage + '% complete';
+  const list = document.getElementById('sectionList');
+  list.innerHTML = d.sections.map(s =>
+    `<li><span class="${s.completed ? 'check' : 'cross'}">${s.completed ? '✓' : '✗'}</span> ${s.name} <span style="color:#aaa">(${s.weight}%)</span></li>`
+  ).join('');
+}
+
+async function loadProfile() {
+  const res = await fetch(`${BASE}/profile`, { headers: authHeaders() });
+  const data = await res.json();
+  if (!data.success) return;
+  const p = data.data;
+
+  document.getElementById('fullName').value = p.fullName || '';
+  document.getElementById('bio').value = p.bio || '';
+  document.getElementById('linkedinUrl').value = p.linkedinUrl || '';
+
+  if (p.profileImage) {
+    document.getElementById('profileImg').src = '/' + p.profileImage.replace(/^public\//, '');
+    document.getElementById('profileImg').style.display = 'block';
+    document.getElementById('noImg').style.display = 'none';
+  }
+
+  renderSubResource('degreesList', p.degrees || [], ['title','institution','url','completionDate'], 'degrees');
+  renderSubResource('certsList', p.certifications || [], ['title','body','url','completionDate'], 'certifications');
+  renderSubResource('licencesList', p.licences || [], ['title','body','url','completionDate'], 'licences');
+  renderSubResource('coursesList', p.professionalCourses || [], ['title','provider','url','completionDate'], 'professionalCourses');
+  renderSubResource('employmentList', p.employmentHistory || [], ['company','role','startDate','endDate'], 'employmentHistory');
+}
+
+/** Map raw field names to user-friendly column headers */
+const fieldLabels = {
+  title: 'Title', institution: 'Institution', url: 'URL',
+  completionDate: 'Completion Date', body: 'Awarding Body',
+  provider: 'Provider', company: 'Company', role: 'Role',
+  startDate: 'Start Date', endDate: 'End Date',
+};
+
+function renderSubResource(containerId, items, fields, resource) {
+  const el = document.getElementById(containerId);
+  if (!items.length) { el.innerHTML = '<p style="color:#aaa;font-size:0.9rem;">None added yet.</p>'; return; }
+  // Store items data for edit functionality
+  window['_data_' + resource] = items;
+  el.innerHTML = `<table><thead><tr>${fields.map(f=>`<th>${fieldLabels[f] || f}</th>`).join('')}<th></th></tr></thead><tbody>
+    ${items.map((item, idx) => `<tr>${fields.map(f => `<td>${formatField(item[f])}</td>`).join('')}
+      <td style="white-space:nowrap;">
+        <button class="btn-primary btn-sm" onclick="editItem('${resource}','${item._id}',${idx})">Edit</button>
+        <button class="btn-danger btn-sm" onclick="deleteItem('${resource}','${item._id}')">Delete</button>
+      </td>
+    </tr>`).join('')}
+  </tbody></table>`;
+}
+
+function formatField(val) {
+  if (!val) return '—';
+  // Only treat ISO date strings (e.g. "2026-01-13T00:00:00.000Z") as dates
+  if (val instanceof Date || (typeof val === 'string' && /^\d{4}-\d{2}-\d{2}T/.test(val))) {
+    return new Date(val).toLocaleDateString('en-GB');
+  }
+  if (typeof val === 'string' && val.startsWith('http')) {
+    return `<a class="link" href="${val}" target="_blank" rel="noopener">Link</a>`;
+  }
+  return val;
+}
+
+async function deleteItem(resource, id) {
+  if (!confirm('Delete this entry?')) return;
+  try {
+    const res = await fetch(`${BASE}/profile/${resource}/${id}`, { method: 'DELETE', headers: authHeaders() });
+    const data = await res.json();
+    if (data.success) { showMsg('Deleted.', 'success'); await loadProfile(); await loadCompletion(); }
+    else showMsg(data.error || 'Delete failed', 'error');
+  } catch (err) {
+    showMsg('Delete error: ' + err.message, 'error');
+  }
+}
+
+// ── Edit sub-resource modal ──────────────────────────────────────────────────
+
+/** Map resource names to their editable fields */
+const resourceFields = {
+  degrees: ['title', 'institution', 'url', 'completionDate'],
+  certifications: ['title', 'body', 'url', 'completionDate'],
+  licences: ['title', 'body', 'url', 'completionDate'],
+  professionalCourses: ['title', 'provider', 'url', 'completionDate'],
+  employmentHistory: ['company', 'role', 'startDate', 'endDate'],
+};
+
+const dateFields = ['completionDate', 'startDate', 'endDate'];
+let editState = {};
+
+/**
+ * Opens the edit modal pre-populated with the selected item's data.
+ * @param {string} resource - The sub-resource type (e.g. 'degrees')
+ * @param {string} id - The subdocument _id
+ * @param {number} idx - Index into the stored data array
+ */
+function editItem(resource, id, idx) {
+  const items = window['_data_' + resource];
+  if (!items || !items[idx]) return;
+  const item = items[idx];
+  const fields = resourceFields[resource];
+  editState = { resource, id, fields };
+
+  const form = document.getElementById('editForm');
+  form.innerHTML = fields.map(f => {
+    let val = item[f] || '';
+    // Convert ISO dates to YYYY-MM-DD for date inputs
+    if (dateFields.includes(f) && val && /^\d{4}-\d{2}-\d{2}T/.test(val)) {
+      val = val.substring(0, 10);
+    }
+    const inputType = dateFields.includes(f) ? 'date' : (f === 'url' ? 'url' : 'text');
+    const safeVal = String(val).replace(/"/g, '&quot;');
+    return `<label>${fieldLabels[f] || f}</label><input id="edit_${f}" type="${inputType}" value="${safeVal}" />`;
+  }).join('');
+
+  const prettyName = resource.replace(/([A-Z])/g, ' $1').replace(/^./, c => c.toUpperCase());
+  document.getElementById('editModalTitle').textContent = 'Edit ' + prettyName;
+  document.getElementById('editModal').style.display = 'block';
+}
+
+function closeEditModal() {
+  document.getElementById('editModal').style.display = 'none';
+  editState = {};
+}
+
+/** Submits the edited data via PUT to the profile sub-resource endpoint */
+async function submitEdit() {
+  const body = {};
+  editState.fields.forEach(f => {
+    const val = document.getElementById('edit_' + f).value;
+    if (val) body[f] = val;
+    else body[f] = ''; // Allow clearing fields
+  });
+  try {
+    const res = await fetch(`${BASE}/profile/${editState.resource}/${editState.id}`, {
+      method: 'PUT', headers: authHeaders(), body: JSON.stringify(body),
+    });
+    const data = await res.json();
+    if (data.success) {
+      showMsg('Updated successfully!', 'success');
+      closeEditModal();
+      await loadProfile();
+      await loadCompletion();
+    } else {
+      showMsg(data.error || 'Update failed', 'error');
+    }
+  } catch (err) {
+    showMsg('Update error: ' + err.message, 'error');
+  }
+}
+
+// Close modal when clicking outside
+document.getElementById('editModal').addEventListener('click', function(e) {
+  if (e.target === this) closeEditModal();
+});
+
+// ── Basic info form ──────────────────────────────────────────────────────────
+document.getElementById('basicForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  try {
+    const res = await fetch(`${BASE}/profile`, {
+      method: 'PUT',
+      headers: authHeaders(),
+      body: JSON.stringify({
+        fullName: document.getElementById('fullName').value,
+        bio: document.getElementById('bio').value,
+        linkedinUrl: document.getElementById('linkedinUrl').value,
+      }),
+    });
+    const data = await res.json();
+    showMsg(data.success ? 'Profile updated!' : (data.error || 'Update failed'), data.success ? 'success' : 'error');
+    if (data.success) await loadCompletion();
+  } catch (err) {
+    showMsg('Network error: ' + err.message, 'error');
+  }
+});
+
+// ── Image upload form ────────────────────────────────────────────────────────
+document.getElementById('imageForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  try {
+    const file = document.getElementById('imgFile').files[0];
+    if (!file) { showMsg('Please select a file.', 'error'); return; }
+    const fd = new FormData();
+    fd.append('image', file);
+    const res = await fetch(`${BASE}/profile/image`, {
+      method: 'POST',
+      headers: { Authorization: 'Bearer ' + TOKEN },
+      body: fd,
+    });
+    const data = await res.json();
+    showMsg(data.success ? 'Image uploaded!' : (data.error || 'Upload failed'), data.success ? 'success' : 'error');
+    if (data.success) { await loadProfile(); await loadCompletion(); }
+  } catch (err) {
+    showMsg('Upload error: ' + err.message, 'error');
+  }
+});
+
+// ── Generic sub-resource add helper ─────────────────────────────────────────
+async function addSubResource(endpoint, body) {
+  try {
+    const res = await fetch(`${BASE}/profile/${endpoint}`, {
+      method: 'POST', headers: authHeaders(), body: JSON.stringify(body),
+    });
+    const data = await res.json();
+    showMsg(data.success ? 'Added successfully!' : (data.error || 'Failed to add'), data.success ? 'success' : 'error');
+    if (data.success) { await loadProfile(); await loadCompletion(); }
+  } catch (err) {
+    showMsg('Network error: ' + err.message, 'error');
+  }
+}
+
+document.getElementById('degreeForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  await addSubResource('degrees', {
+    title: document.getElementById('deg_title').value,
+    institution: document.getElementById('deg_institution').value,
+    url: document.getElementById('deg_url').value,
+    completionDate: document.getElementById('deg_date').value || undefined,
+  });
+  document.getElementById('degreeForm').reset();
+});
+
+document.getElementById('certForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  await addSubResource('certifications', {
+    title: document.getElementById('cert_title').value,
+    body: document.getElementById('cert_body').value,
+    url: document.getElementById('cert_url').value,
+    completionDate: document.getElementById('cert_date').value || undefined,
+  });
+  document.getElementById('certForm').reset();
+});
+
+document.getElementById('licenceForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  await addSubResource('licences', {
+    title: document.getElementById('lic_title').value,
+    body: document.getElementById('lic_body').value,
+    url: document.getElementById('lic_url').value,
+    completionDate: document.getElementById('lic_date').value || undefined,
+  });
+  document.getElementById('licenceForm').reset();
+});
+
+document.getElementById('courseForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  await addSubResource('professionalCourses', {
+    title: document.getElementById('crs_title').value,
+    provider: document.getElementById('crs_provider').value,
+    url: document.getElementById('crs_url').value,
+    completionDate: document.getElementById('crs_date').value || undefined,
+  });
+  document.getElementById('courseForm').reset();
+});
+
+document.getElementById('employmentForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  await addSubResource('employmentHistory', {
+    company: document.getElementById('emp_company').value,
+    role: document.getElementById('emp_role').value,
+    startDate: document.getElementById('emp_start').value || undefined,
+    endDate: document.getElementById('emp_end').value || undefined,
+  });
+  document.getElementById('employmentForm').reset();
+});
+</script>
+</body></html>
