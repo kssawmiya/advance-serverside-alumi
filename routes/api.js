@@ -1,22 +1,11 @@
 'use strict';
 
-/**
- * @file routes/api.js
- * @description Public developer API routes (/api/v1/*).
- * Protected by API key authentication (requireApiKey middleware).
- * These endpoints are meant for third-party developers integrating with the platform.
- *
- * Authentication: Bearer API key (NOT JWT).
- * Generate a key via: POST /api/developer/keys (requires JWT + developer role).
- */
-
 const express = require('express');
 const router = express.Router();
 const requireApiKey = require('../middleware/requireApiKey');
+const { requireScope } = require('../middleware/requireApiKey');
 const { apiLimiter } = require('../middleware/rateLimiter');
 const developerController = require('../controllers/developerController');
-
-// ─── Routes ──────────────────────────────────────────────────────────────────
 
 /**
  * @swagger
@@ -33,7 +22,7 @@ const developerController = require('../controllers/developerController');
  *       **Authentication**: Use your API key as a Bearer token:
  *       `Authorization: Bearer <your-api-key>`
  *
- *       The Alumni of the Day is selected daily at 6 PM by the winner selection
+ *       The Alumni of the Day is selected daily at midnight by the winner selection
  *       algorithm (highest bid wins). The profile changes once per day.
  *
  *       **Rate limit**: 100 requests per 15 minutes per IP.
@@ -115,8 +104,9 @@ const developerController = require('../controllers/developerController');
  */
 router.get(
   '/alumni-of-day',
-  apiLimiter,       // Rate limit: 100 req/15min per IP
-  requireApiKey,    // API key authentication (SHA-256 hash lookup)
+  apiLimiter,
+  requireApiKey,
+  requireScope('read:alumni_of_day'),
   developerController.getAlumniOfDay
 );
 

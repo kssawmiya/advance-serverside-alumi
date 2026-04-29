@@ -4,20 +4,17 @@
   <div id="authMsg" class="msg error" style="display:none">You must be logged in. <a class="link" href="/login">Log in here</a>.</div>
   <div id="msg" class="msg"></div>
 
-  <!-- ── Monthly Status ───────────────────────────────────────────── -->
   <div class="card" id="limitCard" style="display:none">
     <h1>&#127942; Blind Bidding</h1>
     <p style="color:#666;margin-bottom:1rem;font-size:0.93rem;">Bid for tomorrow's Alumni of the Day slot. Bids are blind — you cannot see other users' amounts.</p>
     <div id="limitInfo"></div>
   </div>
 
-  <!-- ── Current Bid Status ───────────────────────────────────────── -->
   <div class="card" id="statusCard" style="display:none">
     <h2>My Bid Status for Tomorrow</h2>
     <div id="bidStatusInfo"></div>
   </div>
 
-  <!-- ── Place / Update Bid ────────────────────────────────────────── -->
   <div class="card" id="placeBidCard" style="display:none">
     <h2 id="bidFormTitle">Place a Bid</h2>
     <form id="bidForm">
@@ -27,7 +24,6 @@
     </form>
   </div>
 
-  <!-- ── Bid History ────────────────────────────────────────────────── -->
   <div class="card" id="historyCard" style="display:none">
     <h2>Bid History</h2>
     <div id="historyTable"></div>
@@ -96,7 +92,6 @@ async function loadBidStatus() {
     ${d.bidDate ? `<p style="font-size:0.85rem;color:#888;">Slot: ${new Date(d.bidDate).toLocaleDateString('en-GB')}</p>` : ''}
   `;
 
-  // If user has a bid, switch the form to "update" mode
   if (d.status !== 'no_bid') {
     currentBidId = await getActiveBidId();
     document.getElementById('bidFormTitle').textContent = 'Increase My Bid';
@@ -112,7 +107,7 @@ async function getActiveBidId() {
   const res = await fetch(`${BASE}/bids/history`, { headers: authHeaders() });
   const data = await res.json();
   if (!data.success) return null;
-  // Find the most recent active bid for tomorrow
+
   const tomorrow = new Date();
   tomorrow.setDate(tomorrow.getDate() + 1);
   const tStr = tomorrow.toDateString();
@@ -149,19 +144,19 @@ document.getElementById('bidForm').addEventListener('submit', async (e) => {
   if (isNaN(amount) || amount < 0) { showMsg('Enter a valid amount.', 'error'); return; }
 
   if (currentBidId) {
-    // Update existing bid
+
     const res = await fetch(`${BASE}/bids/${currentBidId}`, {
       method: 'PUT', headers: authHeaders(), body: JSON.stringify({ amount }),
     });
     const data = await res.json();
     showMsg(data.success ? 'Bid updated!' : (data.error || 'Update failed'), data.success ? 'success' : 'error');
   } else {
-    // Place new bid
+
     const res = await fetch(`${BASE}/bids`, {
       method: 'POST', headers: authHeaders(), body: JSON.stringify({ amount }),
     });
     const data = await res.json();
-    showMsg(data.success ? 'Bid placed! Winner announced at 6 PM.' : (data.error || 'Failed to place bid'), data.success ? 'success' : 'error');
+    showMsg(data.success ? 'Bid placed! Winner announced at midnight.' : (data.error || 'Failed to place bid'), data.success ? 'success' : 'error');
   }
 
   document.getElementById('bidForm').reset();

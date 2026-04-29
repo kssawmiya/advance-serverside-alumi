@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title><%= title %> — Alumni Influencers</title>
-  <!-- CSRF token for double-submit cookie pattern -->
+
   <meta name="csrf-token" content="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -57,7 +57,7 @@
   </div>
 </nav>
 <script>
-  // Show appropriate nav links based on token presence
+
   (function() {
     const token = localStorage.getItem('alumni_token');
     const nav = document.getElementById('navLinks');
@@ -73,13 +73,7 @@
   })();
 </script>
 <script>
-/**
- * SESSION TIMEOUT HANDLING:
- * Checks JWT expiry on page load and every 60 seconds.
- * If the token has expired, auto-logs out the user and redirects to login.
- * JWT tokens expire after the period set in JWT_EXPIRES_IN (default: 7 days).
- * This proactive client-side check prevents stale sessions from persisting.
- */
+
 (function checkSessionTimeout() {
   const token = localStorage.getItem('alumni_token');
   if (!token) return;

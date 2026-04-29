@@ -1,12 +1,5 @@
 'use strict';
 
-/**
- * @file routes/profile.js
- * @description Profile management routes.
- * All routes are protected by JWT authentication (verifyToken middleware).
- * Includes profile image upload and full CRUD for all sub-resources.
- */
-
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
@@ -14,66 +7,36 @@ const path = require('path');
 const { verifyToken } = require('../middleware/auth');
 const profileController = require('../controllers/profileController');
 
-// ─── Multer Configuration ────────────────────────────────────────────────────
-
-/**
- * Multer disk storage configuration.
- * Files are saved to: public/uploads/<timestamp>-<originalname>
- * This naming convention prevents filename collisions.
- */
 const storage = multer.diskStorage({
-  /**
-   * Destination directory for uploaded files.
-   * Ensure this directory exists (tracked via public/uploads/.gitkeep).
-   */
+
   destination: (req, file, cb) => {
     cb(null, 'public/uploads/');
   },
-  /**
-   * Generate a unique filename: timestamp + original filename.
-   * e.g. "1712345678901-avatar.jpg"
-   */
+
   filename: (req, file, cb) => {
     const uniqueName = `${Date.now()}-${file.originalname.replace(/\s+/g, '_')}`;
     cb(null, uniqueName);
   },
 });
 
-/**
- * File type filter: only allow JPEG and PNG images.
- * Rejects other file types before they are written to disk.
- *
- * @param {import('express').Request} req
- * @param {Express.Multer.File} file
- * @param {Function} cb
- */
 const fileFilter = (req, file, cb) => {
   const allowedTypes = ['image/jpeg', 'image/png'];
   if (allowedTypes.includes(file.mimetype)) {
-    cb(null, true); // Accept file
+    cb(null, true);
   } else {
-    cb(new Error('Only JPEG and PNG images are allowed'), false); // Reject file
+    cb(new Error('Only JPEG and PNG images are allowed'), false);
   }
 };
 
-/**
- * Multer instance with:
- * - Disk storage to public/uploads/
- * - JPEG/PNG filter
- * - Max file size: 2MB (2 * 1024 * 1024 bytes)
- */
 const upload = multer({
   storage,
   fileFilter,
   limits: {
-    fileSize: 2 * 1024 * 1024, // 2MB
+    fileSize: 2 * 1024 * 1024,
   },
 });
 
-// ─── All profile routes require a valid JWT ───────────────────────────────────
 router.use(verifyToken);
-
-// ─── Profile Routes ───────────────────────────────────────────────────────────
 
 /**
  * @swagger
@@ -222,8 +185,6 @@ router.post('/image', upload.single('image'), profileController.uploadImage);
  */
 router.get('/completion', profileController.getCompletionStatus);
 
-// ─── Degrees Sub-resource ─────────────────────────────────────────────────────
-
 /**
  * @swagger
  * /api/profile/degrees:
@@ -309,8 +270,6 @@ router.put('/degrees/:id', profileController.updateDegree);
  */
 router.delete('/degrees/:id', profileController.deleteDegree);
 
-// ─── Certifications Sub-resource ──────────────────────────────────────────────
-
 /**
  * @swagger
  * /api/profile/certifications:
@@ -385,8 +344,6 @@ router.put('/certifications/:id', profileController.updateCertification);
  *         description: Certification deleted
  */
 router.delete('/certifications/:id', profileController.deleteCertification);
-
-// ─── Licences Sub-resource ────────────────────────────────────────────────────
 
 /**
  * @swagger
@@ -463,8 +420,6 @@ router.put('/licences/:id', profileController.updateLicence);
  */
 router.delete('/licences/:id', profileController.deleteLicence);
 
-// ─── Professional Courses Sub-resource ───────────────────────────────────────
-
 /**
  * @swagger
  * /api/profile/professionalCourses:
@@ -539,8 +494,6 @@ router.put('/professionalCourses/:id', profileController.updateProfessionalCours
  *         description: Course deleted
  */
 router.delete('/professionalCourses/:id', profileController.deleteProfessionalCourse);
-
-// ─── Employment History Sub-resource ─────────────────────────────────────────
 
 /**
  * @swagger

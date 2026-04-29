@@ -79,6 +79,7 @@
       <a href="/register" class="btn btn-primary">Create Account</a>
       <a href="/login"    class="btn btn-green">Log In</a>
       <a href="/api-docs" class="btn btn-secondary">API Docs</a>
+      <a href="/university/login" class="btn btn-secondary">&#127979; University Dashboard</a>
     </div>
 
     <div class="quick-links" id="authLinks" style="display:none">
@@ -87,7 +88,6 @@
       <a href="/api-docs"  class="quick-link"><span class="icon">&#128196;</span>API Docs</a>
     </div>
 
-    <!-- ── Alumni of the Day ─────────────────────────────────────── -->
     <% if (typeof alumniOfDay !== 'undefined' && alumniOfDay) { %>
     <div style="background:#f0fff4;border:1px solid #c6f6d5;border-radius:8px;padding:1.25rem 1.5rem;margin-bottom:2rem;text-align:left;">
       <h2 style="font-size:0.8rem;text-transform:uppercase;letter-spacing:0.08em;color:#276749;margin-bottom:1rem;font-weight:700;">
@@ -144,6 +144,6 @@
     if (localStorage.getItem('alumni_token')) {
       document.getElementById('authLinks').style.display = 'flex';
     }
-  </script>
+</script>
 </body>
 </html>

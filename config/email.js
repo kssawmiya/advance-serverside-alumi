@@ -1,23 +1,10 @@
 'use strict';
 
-/**
- * @file config/email.js
- * @description Nodemailer transporter configuration and email sending utilities.
- * All send functions are fire-and-forget safe — they log errors but do not throw,
- * so a failed email never crashes the application flow.
- */
-
 const nodemailer = require('nodemailer');
 
-/**
- * Nodemailer SMTP transporter configured from environment variables.
- * For development, use Ethereal (https://ethereal.email) credentials.
- * For production, replace with a real SMTP provider (SendGrid, SES, etc.).
- */
 const transporter = nodemailer.createTransport({
   host: process.env.EMAIL_HOST,
   port: Number(process.env.EMAIL_PORT) || 587,
-  // Use STARTTLS (false) for port 587; use true for port 465 (SSL)
   secure: Number(process.env.EMAIL_PORT) === 465,
   auth: {
     user: process.env.EMAIL_USER,
@@ -25,16 +12,6 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-/**
- * Sends an email verification link to a newly registered user.
- * The verification token is single-use and expires in 24 hours.
- *
- * @async
- * @function sendVerificationEmail
- * @param {string} email - Recipient's email address
- * @param {string} token - Raw verification token (hex string from crypto.randomBytes)
- * @returns {Promise<void>}
- */
 const sendVerificationEmail = async (email, token) => {
   try {
     const verifyUrl = `${process.env.BASE_URL}/api/auth/verify/${token}`;
@@ -65,17 +42,13 @@ const sendVerificationEmail = async (email, token) => {
     const info = await transporter.sendMail(mailOptions);
     console.log(`[Email] Verification email sent to ${email} — Message ID: ${info.messageId}`);
 
-    // In development, print the verification URL directly to the console so it can
-    // be used without a real email inbox (Ethereal or no SMTP configured).
     if (process.env.NODE_ENV !== 'production') {
       console.log(`\n[DEV] ✅ Email verification URL for ${email}:`);
       console.log(`[DEV] 👉 ${verifyUrl}\n`);
     }
   } catch (err) {
-    // Non-critical: log but do not propagate — user can request a resend
     console.error(`[Email] Failed to send verification email to ${email}:`, err.message);
 
-    // Even if email fails, still print the URL in development so testing is not blocked
     if (process.env.NODE_ENV !== 'production') {
       console.log(`\n[DEV] ✅ Email sending failed but here is the verification URL for ${email}:`);
       console.log(`[DEV] 👉 ${process.env.BASE_URL}/api/auth/verify/${token}\n`);
@@ -83,20 +56,9 @@ const sendVerificationEmail = async (email, token) => {
   }
 };
 
-/**
- * Sends a password reset link to the user's email address.
- * The reset token is single-use and expires in 1 hour.
- *
- * @async
- * @function sendPasswordResetEmail
- * @param {string} email - Recipient's email address
- * @param {string} token - Raw reset token (hex string from crypto.randomBytes)
- * @returns {Promise<void>}
- */
 const sendPasswordResetEmail = async (email, token) => {
   try {
-    // Points to the reset-password web page (GET /reset-password/:token)
-    // which renders the form — NOT directly to the API endpoint
+
     const resetUrl = `${process.env.BASE_URL}/reset-password/${token}`;
 
     const mailOptions = {
@@ -125,16 +87,13 @@ const sendPasswordResetEmail = async (email, token) => {
     const info = await transporter.sendMail(mailOptions);
     console.log(`[Email] Password reset email sent to ${email} — Message ID: ${info.messageId}`);
 
-    // In development, print the reset URL directly to the console
     if (process.env.NODE_ENV !== 'production') {
       console.log(`\n[DEV] 🔑 Password reset URL for ${email}:`);
       console.log(`[DEV] 👉 ${resetUrl}\n`);
     }
   } catch (err) {
-    // Non-critical: log but do not propagate
     console.error(`[Email] Failed to send password reset email to ${email}:`, err.message);
 
-    // Even if email fails, still print the URL in development
     if (process.env.NODE_ENV !== 'production') {
       console.log(`\n[DEV] 🔑 Email sending failed but here is the reset URL for ${email}:`);
       console.log(`[DEV] 👉 ${process.env.BASE_URL}/reset-password/${token}\n`);
@@ -142,17 +101,6 @@ const sendPasswordResetEmail = async (email, token) => {
   }
 };
 
-/**
- * Sends a bid result notification email telling the alumnus if they won or lost
- * the Alumni of the Day slot for a given date.
- *
- * @async
- * @function sendBidResultEmail
- * @param {string} email - Recipient's email address
- * @param {boolean} isWinner - True if the alumnus won the slot, false otherwise
- * @param {Date|string} bidDate - The date of the bid slot (displayed in the email)
- * @returns {Promise<void>}
- */
 const sendBidResultEmail = async (email, isWinner, bidDate) => {
   try {
     const dateStr = new Date(bidDate).toDateString();
@@ -194,7 +142,6 @@ const sendBidResultEmail = async (email, isWinner, bidDate) => {
     const info = await transporter.sendMail(mailOptions);
     console.log(`[Email] Bid result email (winner=${isWinner}) sent to ${email} — ID: ${info.messageId}`);
   } catch (err) {
-    // Non-critical: results are already saved in DB — email is informational only
     console.error(`[Email] Failed to send bid result email to ${email}:`, err.message);
   }
 };

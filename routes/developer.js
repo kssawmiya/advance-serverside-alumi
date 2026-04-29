@@ -1,28 +1,13 @@
 'use strict';
 
-/**
- * @file routes/developer.js
- * @description Developer portal routes for API key management.
- * All routes require JWT authentication.
- * These routes are for managing API keys — the actual developer API is in routes/api.js.
- */
-
 const express = require('express');
 const router = express.Router();
 const { body } = require('express-validator');
 const { verifyToken } = require('../middleware/auth');
 const apiKeyController = require('../controllers/apiKeyController');
 
-// ─── All developer routes require JWT authentication ──────────────────────────
 router.use(verifyToken);
 
-// ─── Validation ───────────────────────────────────────────────────────────────
-
-/**
- * Validates the API key name:
- * - Required, non-empty
- * - Trimmed of whitespace
- */
 const validateKeyName = [
   body('name')
     .notEmpty()
@@ -31,8 +16,6 @@ const validateKeyName = [
     .isLength({ min: 1, max: 100 })
     .withMessage('Key name must be between 1 and 100 characters'),
 ];
-
-// ─── Routes ──────────────────────────────────────────────────────────────────
 
 /**
  * @swagger

@@ -4,7 +4,6 @@
   <div id="msg" class="msg"></div>
   <div id="authMsg" class="msg error" style="display:none">You must be logged in. <a class="link" href="/login">Log in here</a>.</div>
 
-  <!-- ── Completion bar ───────────────────────────────────────────── -->
   <div class="card" id="completionCard" style="display:none">
     <h2>Profile Completion</h2>
     <div class="progress-bar-wrap"><div class="progress-bar" id="progressBar" style="width:0%"></div></div>
@@ -12,7 +11,6 @@
     <ul class="section-list" id="sectionList"></ul>
   </div>
 
-  <!-- ── Basic Info ───────────────────────────────────────────────── -->
   <div class="card" id="basicCard" style="display:none">
     <h2>Personal Information</h2>
     <form id="basicForm">
@@ -23,7 +21,27 @@
         </div>
         <div>
           <label>LinkedIn URL</label>
-          <input id="linkedinUrl" type="url" placeholder="https://linkedin.com/in/..." />
+          <input id="linkedinUrl" type="url" placeholder="https:
+        </div>
+      </div>
+      <div class="flex-row">
+        <div>
+          <label>Degree Programme <span style="font-weight:400;color:#888">(for analytics)</span></label>
+          <input id="programme" type="text" placeholder="BSc Computer Science" />
+        </div>
+        <div>
+          <label>Graduation Year</label>
+          <input id="graduationYear" type="number" placeholder="2022" min="1980" max="2030" />
+        </div>
+      </div>
+      <div class="flex-row">
+        <div>
+          <label>Industry Sector <span style="font-weight:400;color:#888">(current)</span></label>
+          <input id="industrySector" type="text" placeholder="Technology, Finance, Healthcare…" />
+        </div>
+        <div>
+          <label>Current Location</label>
+          <input id="currentLocation" type="text" placeholder="London, UK" />
         </div>
       </div>
       <label>Biography <span style="font-weight:400;color:#888">(max 500 chars)</span></label>
@@ -32,7 +50,6 @@
     </form>
   </div>
 
-  <!-- ── Profile Image ────────────────────────────────────────────── -->
   <div class="card" id="imageCard" style="display:none">
     <h2>Profile Image</h2>
     <div style="display:flex;align-items:center;gap:1.5rem;margin-bottom:1rem;">
@@ -46,7 +63,6 @@
     </form>
   </div>
 
-  <!-- ── Degrees ──────────────────────────────────────────────────── -->
   <div class="card" id="degreesCard" style="display:none">
     <h2>Degrees</h2>
     <div id="degreesList"></div>
@@ -61,7 +77,6 @@
     </form>
   </div>
 
-  <!-- ── Certifications ───────────────────────────────────────────── -->
   <div class="card" id="certsCard" style="display:none">
     <h2>Certifications</h2>
     <div id="certsList"></div>
@@ -76,7 +91,6 @@
     </form>
   </div>
 
-  <!-- ── Licences ─────────────────────────────────────────────────── -->
   <div class="card" id="licencesCard" style="display:none">
     <h2>Licences</h2>
     <div id="licencesList"></div>
@@ -91,7 +105,6 @@
     </form>
   </div>
 
-  <!-- ── Professional Courses ─────────────────────────────────────── -->
   <div class="card" id="coursesCard" style="display:none">
     <h2>Professional Courses</h2>
     <div id="coursesList"></div>
@@ -106,7 +119,6 @@
     </form>
   </div>
 
-  <!-- ── Employment History ────────────────────────────────────────── -->
   <div class="card" id="employmentCard" style="display:none">
     <h2>Employment History</h2>
     <div id="employmentList"></div>
@@ -121,7 +133,6 @@
     </form>
   </div>
 
-  <!-- ── Edit Modal ──────────────────────────────────────────────── -->
   <div id="editModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:1000;">
     <div style="background:#fff;border-radius:10px;padding:2rem;max-width:560px;width:90%;margin:10vh auto;">
       <h2 id="editModalTitle" style="margin-bottom:1rem;">Edit Entry</h2>
@@ -186,9 +197,13 @@ async function loadProfile() {
   document.getElementById('fullName').value = p.fullName || '';
   document.getElementById('bio').value = p.bio || '';
   document.getElementById('linkedinUrl').value = p.linkedinUrl || '';
+  document.getElementById('programme').value = p.programme || '';
+  document.getElementById('graduationYear').value = p.graduationYear || '';
+  document.getElementById('industrySector').value = p.industrySector || '';
+  document.getElementById('currentLocation').value = p.currentLocation || '';
 
   if (p.profileImage) {
-    document.getElementById('profileImg').src = '/' + p.profileImage.replace(/^public\//, '');
+    document.getElementById('profileImg').src = '/' + p.profileImage.replace(/^public\
     document.getElementById('profileImg').style.display = 'block';
     document.getElementById('noImg').style.display = 'none';
   }
@@ -200,7 +215,6 @@ async function loadProfile() {
   renderSubResource('employmentList', p.employmentHistory || [], ['company','role','startDate','endDate'], 'employmentHistory');
 }
 
-/** Map raw field names to user-friendly column headers */
 const fieldLabels = {
   title: 'Title', institution: 'Institution', url: 'URL',
   completionDate: 'Completion Date', body: 'Awarding Body',
@@ -211,7 +225,7 @@ const fieldLabels = {
 function renderSubResource(containerId, items, fields, resource) {
   const el = document.getElementById(containerId);
   if (!items.length) { el.innerHTML = '<p style="color:#aaa;font-size:0.9rem;">None added yet.</p>'; return; }
-  // Store items data for edit functionality
+
   window['_data_' + resource] = items;
   el.innerHTML = `<table><thead><tr>${fields.map(f=>`<th>${fieldLabels[f] || f}</th>`).join('')}<th></th></tr></thead><tbody>
     ${items.map((item, idx) => `<tr>${fields.map(f => `<td>${formatField(item[f])}</td>`).join('')}
@@ -225,7 +239,7 @@ function renderSubResource(containerId, items, fields, resource) {
 
 function formatField(val) {
   if (!val) return '—';
-  // Only treat ISO date strings (e.g. "2026-01-13T00:00:00.000Z") as dates
+
   if (val instanceof Date || (typeof val === 'string' && /^\d{4}-\d{2}-\d{2}T/.test(val))) {
     return new Date(val).toLocaleDateString('en-GB');
   }
@@ -247,9 +261,6 @@ async function deleteItem(resource, id) {
   }
 }
 
-// ── Edit sub-resource modal ──────────────────────────────────────────────────
-
-/** Map resource names to their editable fields */
 const resourceFields = {
   degrees: ['title', 'institution', 'url', 'completionDate'],
   certifications: ['title', 'body', 'url', 'completionDate'],
@@ -261,12 +272,6 @@ const resourceFields = {
 const dateFields = ['completionDate', 'startDate', 'endDate'];
 let editState = {};
 
-/**
- * Opens the edit modal pre-populated with the selected item's data.
- * @param {string} resource - The sub-resource type (e.g. 'degrees')
- * @param {string} id - The subdocument _id
- * @param {number} idx - Index into the stored data array
- */
 function editItem(resource, id, idx) {
   const items = window['_data_' + resource];
   if (!items || !items[idx]) return;
@@ -277,7 +282,7 @@ function editItem(resource, id, idx) {
   const form = document.getElementById('editForm');
   form.innerHTML = fields.map(f => {
     let val = item[f] || '';
-    // Convert ISO dates to YYYY-MM-DD for date inputs
+
     if (dateFields.includes(f) && val && /^\d{4}-\d{2}-\d{2}T/.test(val)) {
       val = val.substring(0, 10);
     }
@@ -296,13 +301,12 @@ function closeEditModal() {
   editState = {};
 }
 
-/** Submits the edited data via PUT to the profile sub-resource endpoint */
 async function submitEdit() {
   const body = {};
   editState.fields.forEach(f => {
     const val = document.getElementById('edit_' + f).value;
     if (val) body[f] = val;
-    else body[f] = ''; // Allow clearing fields
+    else body[f] = '';
   });
   try {
     const res = await fetch(`${BASE}/profile/${editState.resource}/${editState.id}`, {
@@ -322,12 +326,10 @@ async function submitEdit() {
   }
 }
 
-// Close modal when clicking outside
 document.getElementById('editModal').addEventListener('click', function(e) {
   if (e.target === this) closeEditModal();
 });
 
-// ── Basic info form ──────────────────────────────────────────────────────────
 document.getElementById('basicForm').addEventListener('submit', async (e) => {
   e.preventDefault();
   try {
@@ -338,6 +340,10 @@ document.getElementById('basicForm').addEventListener('submit', async (e) => {
         fullName: document.getElementById('fullName').value,
         bio: document.getElementById('bio').value,
         linkedinUrl: document.getElementById('linkedinUrl').value,
+        programme: document.getElementById('programme').value,
+        graduationYear: document.getElementById('graduationYear').value,
+        industrySector: document.getElementById('industrySector').value,
+        currentLocation: document.getElementById('currentLocation').value,
       }),
     });
     const data = await res.json();
@@ -348,7 +354,6 @@ document.getElementById('basicForm').addEventListener('submit', async (e) => {
   }
 });
 
-// ── Image upload form ────────────────────────────────────────────────────────
 document.getElementById('imageForm').addEventListener('submit', async (e) => {
   e.preventDefault();
   try {
@@ -369,7 +374,6 @@ document.getElementById('imageForm').addEventListener('submit', async (e) => {
   }
 });
 
-// ── Generic sub-resource add helper ─────────────────────────────────────────
 async function addSubResource(endpoint, body) {
   try {
     const res = await fetch(`${BASE}/profile/${endpoint}`, {

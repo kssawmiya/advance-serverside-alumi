@@ -1,29 +1,13 @@
 'use strict';
 
-/**
- * @file routes/bids.js
- * @description Blind bidding routes.
- * All routes require JWT authentication via verifyToken middleware.
- * Input validation is applied where amounts are submitted.
- */
-
 const express = require('express');
 const router = express.Router();
 const { body } = require('express-validator');
 const { verifyToken } = require('../middleware/auth');
 const bidController = require('../controllers/bidController');
 
-// ─── All bid routes require authentication ────────────────────────────────────
 router.use(verifyToken);
 
-// ─── Validation Middleware ────────────────────────────────────────────────────
-
-/**
- * Validates bid amount:
- * - Must be numeric
- * - Must be >= 0 (non-negative)
- * - Coerced to number type
- */
 const validateAmount = [
   body('amount')
     .notEmpty()
@@ -38,8 +22,6 @@ const validateAmount = [
     })
     .toFloat(),
 ];
-
-// ─── Routes ──────────────────────────────────────────────────────────────────
 
 /**
  * @swagger
@@ -194,7 +176,7 @@ router.delete('/:id', bidController.cancelBid);
  *       - `winning`: Your bid is currently the highest
  *       - `not_winning`: One or more bids are higher than yours
  *
- *       Note: `winning` status is not a guarantee — others can raise bids until 6 PM.
+ *       Note: `winning` status is not a guarantee — others can raise bids until midnight.
  *     responses:
  *       200:
  *         description: Bid status retrieved

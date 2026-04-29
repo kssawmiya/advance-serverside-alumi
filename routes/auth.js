@@ -1,11 +1,5 @@
 'use strict';
 
-/**
- * @file routes/auth.js
- * @description Authentication routes: register, verify, login, forgot/reset password.
- * All sensitive routes are rate-limited. Inputs are validated with express-validator.
- */
-
 const express = require('express');
 const router = express.Router();
 const { body, validationResult } = require('express-validator');
@@ -13,25 +7,12 @@ const { authLimiter } = require('../middleware/rateLimiter');
 const { verifyToken } = require('../middleware/auth');
 const authController = require('../controllers/authController');
 
-/**
- * CSRF validation middleware — validates the X-CSRF-Token header against the
- * _csrf cookie for all form-facing POST routes (double-submit cookie pattern).
- * The validateCsrf function is set on app.locals during CSRF middleware setup in app.js.
- */
 const csrfProtect = (req, res, next) => {
   const validateCsrf = req.app.locals.validateCsrf;
   if (validateCsrf) return validateCsrf(req, res, next);
-  next(); // Skip if CSRF middleware not configured (e.g., testing)
+  next();
 };
 
-// ─── Validation middleware arrays ────────────────────────────────────────────
-
-/**
- * Validates registration inputs:
- * - email: valid format, normalised, must end with UNIVERSITY_DOMAIN
- * - password: strong password (8+ chars, upper, lower, digit, special char)
- * - fullName: non-empty, trimmed, escaped
- */
 const validateRegister = [
   body('email')
     .isEmail()
@@ -58,11 +39,6 @@ const validateRegister = [
     .escape(),
 ];
 
-/**
- * Validates login inputs:
- * - email: valid format
- * - password: non-empty
- */
 const validateLogin = [
   body('email')
     .isEmail()
@@ -72,8 +48,6 @@ const validateLogin = [
     .notEmpty()
     .withMessage('Password is required'),
 ];
-
-// ─── Routes ──────────────────────────────────────────────────────────────────
 
 /**
  * @swagger
